@@ -43,7 +43,7 @@ class UserService {
   async getProfileById(userId) {
     try {
       const statement = `
-      SELECT u.id id,u.name name,p.avatar_url avatar_url, p.age age,p.gender gender,p.email email,p.career career,p.province province,p.city city
+      SELECT u.id id,u.name name,p.avatar_url avatarUrl, p.age age,p.gender gender,p.email email,p.career career,p.province province,p.city city
       FROM user u
       LEFT JOIN profile p
       ON u.id = p.user_id
