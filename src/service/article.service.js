@@ -10,29 +10,10 @@ class ArticleService {
       console.log(error);
     }
   }
-
-  async haslike(articleId, userId) {
+  async addView(articleId) {
     try {
-      const statement = `SELECT * FROM article_like WHERE article_id = ? AND user_id= ?;`;
-      const [result] = await connection.execute(statement, [articleId, userId]);
-      return result[0] ? true : false;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  async addlike(articleId, userId) {
-    try {
-      const statement = `INSERT INTO article_like (article_id,user_id) VALUES (?,?);`;
-      const [result] = await connection.execute(statement, [articleId, userId]);
-      return result;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  async removelike(articleId, userId) {
-    try {
-      const statement = `DELETE FROM article_like WHERE article_id = ? AND user_id = ?;`;
-      const [result] = await connection.execute(statement, [articleId, userId]);
+      const statement = 'UPDATE article set views = views + 1 WHERE id = ?;';
+      const [result] = await connection.execute(statement, [articleId]); //拿到的元数据是数组,解构取得查询数据库结果,也是个数组
       return result;
     } catch (error) {
       console.log(error);
@@ -42,12 +23,13 @@ class ArticleService {
     try {
       // const statement = 'SELECT * FROM article WHERE id = ?;';
       const statement = `
-      SELECT a.id id,a.title title,a.content content,a.createAt createAt,a.updateAt updateAt,
+      SELECT a.id id,a.title title,a.content content,a.views views,a.create_at createAt,a.update_at updateAt,
       JSON_OBJECT('id',u.id,'name',u.name,'avatarUrl',p.avatar_url) author,
       (SELECT COUNT(al.user_id) FROM article
       LEFT JOIN article_like al ON article.id = al.article_id
       WHERE article.id = a.id) likes,
-      (SELECT COUNT(*) FROM comment c WHERE c.article_id = a.id) commentCount,
+      (SELECT COUNT(*)+(SELECT COUNT(*) FROM reply r WHERE r.article_id = a.id)
+      FROM comment c WHERE c.article_id = a.id) commentCount,
       IF(COUNT(tag.id),JSON_ARRAYAGG(JSON_OBJECT('id',tag.id,'name',tag.name)),NULL) tags,
       (SELECT JSON_ARRAYAGG(CONCAT('${config.APP_HOST}:${config.APP_PORT}/article/images/',file.filename)) FROM file WHERE a.id = file.article_id) images,
       CONCAT('${config.APP_HOST}:${config.APP_PORT}/article/',a.id) articleUrl
@@ -64,16 +46,16 @@ class ArticleService {
       console.log(error);
     }
   }
-
   async getArticleList(offset, size) {
     try {
       const statement = `
-      SELECT a.id id,a.title title,a.content content,a.createAt createAt,a.updateAt updateAt,
-      JSON_OBJECT('id',u.id,'name',u.name,'avatarUrl',p.avatar_url) author,
+      SELECT a.id id,a.title title,a.content content,a.views views,a.create_at createAt,a.update_at updateAt,
+      JSON_OBJECT('id',u.id,'name',u.name,'avatarUrl',p.avatar_url,'sex',p.sex,'career',p.career) author,
       (SELECT COUNT(al.user_id) FROM article
       LEFT JOIN article_like al ON article.id = al.article_id
       WHERE article.id = a.id) likes,
-      (SELECT COUNT(*) FROM comment c WHERE c.article_id = a.id) commentCount,
+      (SELECT COUNT(*)+(SELECT COUNT(*) FROM reply r WHERE r.article_id = a.id)
+      FROM comment c WHERE c.article_id = a.id) commentCount,
       IF(COUNT(tag.id),JSON_ARRAYAGG(JSON_OBJECT('id',tag.id,'name',tag.name)),NULL) tags,
       (SELECT JSON_ARRAYAGG(CONCAT('${config.APP_HOST}:${config.APP_PORT}/article/images/',file.filename)) FROM file WHERE a.id = file.article_id) images,
       CONCAT('${config.APP_HOST}:${config.APP_PORT}/article/',a.id) articleUrl
@@ -90,7 +72,6 @@ class ArticleService {
       console.log(error);
     }
   }
-
   async getTotal() {
     try {
       const statement = `SELECT COUNT(a.id) total FROM article a;`;
@@ -100,7 +81,6 @@ class ArticleService {
       console.log(error);
     }
   }
-
   async update(title, content, articleId) {
     try {
       const statement = `UPDATE article SET title = ?,content = ? WHERE id = ?;`;
@@ -110,7 +90,6 @@ class ArticleService {
       console.log(error);
     }
   }
-
   async delete(articleId) {
     try {
       const statement = `DELETE FROM article WHERE id = ?;`;
@@ -120,7 +99,6 @@ class ArticleService {
       console.log(error);
     }
   }
-
   async hasTag(articleId, tagId) {
     try {
       const statement = `SELECT * FROM article_tag WHERE article_id = ? AND tag_id = ?;`;
@@ -130,7 +108,6 @@ class ArticleService {
       console.log(error);
     }
   }
-
   async addTag(articleId, tagId) {
     try {
       const statement = `INSERT INTO article_tag (article_id,tag_id) VALUES (?,?);`;

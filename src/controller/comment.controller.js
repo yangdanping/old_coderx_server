@@ -1,4 +1,5 @@
 const commentService = require('../service/comment.service.js');
+const userService = require('../service/user.service.js');
 
 class CommentCocntroller {
   async addComment(ctx, next) {
@@ -10,10 +11,26 @@ class CommentCocntroller {
     // 3.将插入数据库的结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
       console.log('发表评论成功!');
-      ctx.body = { statusCode: 1, data: result };
+      ctx.body = { code: '0', data: result };
     } else {
       console.log('发表评论失败!');
-      ctx.body = { statusCode: 0, data: result };
+      ctx.body = { code: '1', data: result };
+    }
+  }
+  async likeComment(ctx, next) {
+    // 1.获取用户id和点赞的评论id
+    const userId = ctx.user.id;
+    const [urlKey] = Object.keys(ctx.params); //从params中取出对象的key,即我们拼接的资源id,如评论就是commentId
+    const dataId = ctx.params[urlKey]; //获取到对应id的值
+    const tableName = urlKey.replace('Id', ''); //把Id去掉就是表名
+    // 2.根据传递过来参数在数据库中判断是否有点赞,有则取消点赞,没有则成功点赞
+    const isliked = await userService.haslike(tableName, dataId, userId);
+    if (!isliked) {
+      const result = await userService.changeLike(tableName, dataId, userId, 1);
+      ctx.body = { code: '0', data: result }; //增加一条点赞记录
+    } else {
+      const result = await userService.changeLike(tableName, dataId, userId);
+      ctx.body = { code: '1', data: result }; //删除一条点赞记录
     }
   }
   async reply(ctx, next) {
@@ -21,14 +38,14 @@ class CommentCocntroller {
     const userId = ctx.user.id;
     const { commentId } = ctx.params;
     const { articleId, content } = ctx.request.body;
-    // 2.将获取到的数据插入到数据库中
+    // 2.将获取到的数据插入到数据库中(注意!replyUserId也用于判断是否是对文章中某条评论的回复的回复)
     const result = await commentService.reply(userId, articleId, commentId, content);
     // 3.将插入数据的结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
       console.log('回复评论成功!');
-      ctx.body = { statusCode: 1, data: result };
+      ctx.body = { code: '0', data: result };
     } else {
-      ctx.body = { statusCode: 0, data: result };
+      ctx.body = { code: '1', data: result };
     }
   }
   async update(ctx, next) {
@@ -40,10 +57,10 @@ class CommentCocntroller {
     // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
       console.log('修改评论成功!');
-      ctx.body = { statusCode: 1, data: result };
+      ctx.body = { code: '0', data: result };
     } else {
       console.log('修改评论失败!');
-      ctx.body = { statusCode: 0, data: result };
+      ctx.body = { code: '1', data: result };
     }
   }
   async delete(ctx, next) {
@@ -54,13 +71,12 @@ class CommentCocntroller {
     // 3.将删除结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
       console.log('删除评论成功!');
-      ctx.body = { statusCode: 1, data: result };
+      ctx.body = { code: '0', data: result };
     } else {
       console.log('删除评论失败!');
-      ctx.body = { statusCode: 0, data: result };
+      ctx.body = { code: '1', data: result };
     }
   }
-
   async getList(ctx, next) {
     // 1.获取数据(由于是get请求,所以通过query的方式把其传过来,当然可以判断一些别人有没有传,没传的话最好在这里发送错误信息)
     const { articleId } = ctx.query;
@@ -69,10 +85,10 @@ class CommentCocntroller {
     const result = await commentService.getCommentList(articleId);
     if (result) {
       console.log(`获取动态${articleId}的评论列表成功!`);
-      ctx.body = { statusCode: 1, data: result };
+      ctx.body = { code: '0', data: result };
     } else {
       console.log('获取评论列表失败!');
-      ctx.body = { statusCode: 0, data: result };
+      ctx.body = { code: '1', data: result };
     }
   }
 }

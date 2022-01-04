@@ -32,6 +32,9 @@ class Utils {
     const err = new Error(errortype); //Error对象有两个属性name和message
     return ctx.app.emit('error', err, ctx); //第一个参数表示发出去的事件是error事件,第二个参数表示你要给用户提示的错误信息
   }
+  removeHTMLTag(str) {
+    return str.replace(new RegExp('<(S*?)[^>]*>.*?|<.*? />|&nbsp; ', 'g'), '');
+  }
 }
 
 module.exports = new Utils();

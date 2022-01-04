@@ -8,6 +8,9 @@ const { verifytagExists } = require('../middleware/tag.middleware.js');
 用户发布文章必须先验证其是否登陆(授权) */
 articleRouter.post('/', verifyAuth, articleController.addArticle);
 
+/* ★浏览文章接口---------------------------------- */
+articleRouter.put('/:articleId/view', articleController.viewArticle);
+
 /* ★点赞文章接口---------------------------------- */
 articleRouter.post('/:articleId/like', verifyAuth, articleController.likeArticle);
 

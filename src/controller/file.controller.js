@@ -16,13 +16,12 @@ class FileController {
       const avatarUrl = `${config.APP_HOST}:${config.APP_PORT}/user/${userId}/avatar`; //注意,把专门获取头像的接口写好
       const savedAvatarUrl = await userService.updateAvatarUrl(avatarUrl, userId);
       console.log(savedAvatarUrl);
-      ctx.body = savedAvatarUrl ? { statusCode: 1, data: result } : { statusCode: 0 };
+      ctx.body = savedAvatarUrl ? { code: '0', data: result } : { code: '1' };
     } else {
       console.log('上传用户头像失败');
-      ctx.body = { statusCode: 0 };
+      ctx.body = { code: '1' };
     }
   }
-
   async savePictureInfo(ctx, next) {
     // 1.获取图像数据,由于那边是multer({ ... }).array('picture', 9),所以这里是返回数组,是files
     const userId = ctx.user.id;
@@ -37,7 +36,7 @@ class FileController {
       result ? savedPictures.push(result) : null;
     }
     const count = savedPictures.length;
-    ctx.body = count ? { statusCode: 1, data: `上传${count}张图片成功` } : { statusCode: 0 };
+    ctx.body = count ? { code: '0', data: `上传${count}张图片成功` } : { code: '1' };
   }
 }
 

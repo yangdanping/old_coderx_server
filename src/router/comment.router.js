@@ -3,8 +3,16 @@ const commentRouter = new Router({ prefix: '/comment' });
 const commentController = require('../controller/comment.controller');
 const { verifyAuth, verifyPermission } = require('../middleware/auth.middleware');
 
-/* ★<用户对动态评论>的实现---------------------------------- */
+/* ★<用户对文章评论>的实现---------------------------------- */
 commentRouter.post('/', verifyAuth, commentController.addComment);
+
+/* ★<获取评论列表>的实现----------------------------------
+设置为不登录的用户也能看评论列表 */
+commentRouter.get('/', commentController.getList);
+
+/* ★<用户对评论点赞>的实现---------------------------------- */
+commentRouter.post('/:commentId/like', verifyAuth, commentController.likeComment);
+
 /* ★<用户对评论回复>的实现----------------------------------
 一开始是把commentId放到body中传过来的,但不符合Restful风格
 由于是对某一条评论的回复,所以当我对某条具体评论做操作时,最好也把commentId放上去,
@@ -20,9 +28,5 @@ commentRouter.put('/:commentId', verifyAuth, verifyPermission, commentController
 
 /* ★<用户删除评论>的实现---------------------------------- */
 commentRouter.delete('/:commentId', verifyAuth, verifyPermission, commentController.delete);
-
-/* ★<获取评论列表>的实现----------------------------------
-设置为不登录的用户也能看评论列表 */
-commentRouter.get('/', commentController.getList);
 
 module.exports = commentRouter;

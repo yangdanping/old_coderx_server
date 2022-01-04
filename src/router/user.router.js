@@ -2,6 +2,10 @@ const Router = require('koa-router');
 const userRouter = new Router({ prefix: '/user' });
 const userController = require('../controller/user.controller');
 const { verifyUserRegister, encryptUserPwd, verifyUserLogin } = require('../middleware/user.middleware');
+const { verifyAuth } = require('../middleware/auth.middleware');
+
+/* ★检查授权用户接口------------------------------------------- */
+userRouter.get('/checkAuth', verifyAuth, (ctx) => (ctx.body = { code: '0' }));
 
 /* ★用户注册接口-------------------------------------------
 大致流程:用户发过来账号(姓名/密码) --> 账号密码验证 --> 密码加密 --> 在数据库中存储起来 --> 注册成功  */
@@ -11,7 +15,16 @@ userRouter.post('/register', verifyUserRegister, encryptUserPwd, userController.
 大致流程:用户发过来账号(姓名/密码) --> 账号密码验证 --> 进行用户授权 */
 userRouter.post('/login', verifyUserLogin, userController.userLogin);
 
-/* ★获取用户信息接口------------------------------------------- */
+/* ★获取用户文章接口------------------------------------------- */
+userRouter.get('/:userId/article', userController.getArticle);
+
+/* ★获取用户评论接口------------------------------------------- */
+userRouter.get('/:userId/comment', userController.getComment);
+
+/* ★获取用户文章接口------------------------------------------- */
+userRouter.get('/:userId/profile', userController.getProfile);
+
+/* ★获取用户基本信息接口------------------------------------------- */
 userRouter.get('/:userId/profile', userController.getProfile);
 
 /* ★获取用户点赞信息接口------------------------------------------- */
@@ -19,5 +32,11 @@ userRouter.get('/:userId/like', userController.getLiked);
 
 /* ★获取头像接口------------------------------------------- */
 userRouter.get('/:userId/avatar', userController.getAvatar);
+
+/* ★关注用户接口------------------------------------------- */
+userRouter.post('/:userId/follow', verifyAuth, userController.userFollow);
+
+/* ★获取关注信息接口------------------------------------------- */
+userRouter.get('/:userId/follow', userController.getFollow);
 
 module.exports = userRouter;

@@ -1,5 +1,6 @@
 const fs = require('fs'); //fs模块用于读取文件信息,如获取到用户头像信息后找到图像资源返回给前端
 const articleService = require('../service/article.service.js');
+const userService = require('../service/user.service.js');
 const fileService = require('../service/file.service.js');
 const { PICTURE_PATH } = require('../constants/file-path');
 
@@ -13,24 +14,39 @@ class ArticleController {
     // 3.将插入数据库的结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
       console.log('发布文章成功!');
-      ctx.body = { statusCode: 1, data: result };
+      ctx.body = { code: '0', data: result };
     } else {
       console.log('发布文章失败!');
-      ctx.body = { statusCode: 0, data: result };
+      ctx.body = { code: '1', data: result };
+    }
+  }
+  async viewArticle(ctx, next) {
+    // 1.获取用户id和点赞的文章id
+    const { articleId } = ctx.params;
+    // 2.根据传递过来参数在数据库中判断是否有点赞,有则取消点赞,没有则成功点赞
+    const result = await articleService.addView(articleId);
+    if (result) {
+      console.log('浏览文章成功!');
+      ctx.body = { code: '0', data: result };
+    } else {
+      console.log('浏览文章失败!');
+      ctx.body = { code: '1', data: result };
     }
   }
   async likeArticle(ctx, next) {
-    // 1.获取用户id和点赞的文章id
-    const { articleId } = ctx.params;
+    // 1.获取用户id和点赞的评论id
     const userId = ctx.user.id;
+    const [urlKey] = Object.keys(ctx.params); //从params中取出对象的key,即我们拼接的资源id,如评论就是commentId
+    const dataId = ctx.params[urlKey]; //获取到对应id的值
+    const tableName = urlKey.replace('Id', ''); //把Id去掉就是表名
     // 2.根据传递过来参数在数据库中判断是否有点赞,有则取消点赞,没有则成功点赞
-    const haslike = await articleService.haslike(articleId, userId);
-    if (!haslike) {
-      const result = await articleService.addlike(articleId, userId);
-      ctx.body = { statusCode: 1, data: result }; //增加一条点赞记录
+    const isliked = await userService.haslike(tableName, dataId, userId);
+    if (!isliked) {
+      const result = await userService.changeLike(tableName, dataId, userId, 1);
+      ctx.body = { code: '0', data: result }; //增加一条点赞记录
     } else {
-      const result = await articleService.removelike(articleId, userId);
-      ctx.body = { statusCode: 0, data: result }; //删除一条点赞记录
+      const result = await userService.changeLike(tableName, dataId, userId);
+      ctx.body = { code: '1', data: result }; //删除一条点赞记录
     }
   }
   async getDetail(ctx, next) {
@@ -42,10 +58,10 @@ class ArticleController {
     // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
       console.log('查询单个文章成功!');
-      ctx.body = { statusCode: 1, data: result };
+      ctx.body = { code: '0', data: result };
     } else {
       console.log('发布单个文章失败!');
-      ctx.body = { statusCode: 0, data: result };
+      ctx.body = { code: '1', data: result };
     }
   }
   async getList(ctx, next) {
@@ -53,15 +69,15 @@ class ArticleController {
     const { offset, size } = ctx.query;
     // 2.根据传递过来偏离量和数据长度在数据库中查询文章列表
     const result = await articleService.getArticleList(offset, size);
-    result.forEach((article) => (article.content = article.content.replace(new RegExp('<(S*?)[^>]*>.*?|<.*? />|&nbsp; ', 'g'), '')));
-    const { total } = await articleService.getTotal();
     // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
+      result.forEach((article) => (article.content = article.content.replace(new RegExp('<(S*?)[^>]*>.*?|<.*? />|&nbsp; ', 'g'), '')));
+      const { total } = await articleService.getTotal();
       console.log('查询文章列表成功!');
-      ctx.body = { statusCode: 1, data: result, total };
+      ctx.body = { code: '0', data: result, total };
     } else {
       console.log('发布文章列表失败!');
-      ctx.body = { statusCode: 0, data: result };
+      ctx.body = { code: '1', data: result };
     }
   }
   async update(ctx, next) {
@@ -73,10 +89,10 @@ class ArticleController {
     // 3.将修改数据库的结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
       console.log('修改文章成功!');
-      ctx.body = { statusCode: 1, data: result };
+      ctx.body = { code: '0', data: result };
     } else {
       console.log('修改文章失败!');
-      ctx.body = { statusCode: 0, data: result };
+      ctx.body = { code: '1', data: result };
     }
   }
   async delete(ctx, next) {
@@ -87,10 +103,10 @@ class ArticleController {
     // 3.将修改数据库的结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
       console.log('删除文章成功!');
-      ctx.body = { statusCode: 1, data: result };
+      ctx.body = { code: '0', data: result };
     } else {
       console.log('删除文章失败!');
-      ctx.body = { statusCode: 0, data: result };
+      ctx.body = { code: '1', data: result };
     }
   }
   async addTag(ctx, next) {
@@ -119,7 +135,7 @@ class ArticleController {
     ['large', 'middle', 'small'].some((item) => item === type) ? (filename += '-' + type) : null; //调用数组的some函数,可判断数组中某个东西是等于某个值,返回布尔值
     // 2.根据获取到的id去数据库直接查询
     if (fileInfo) {
-      console.log('获取动态图像信息成功', fileInfo);
+      console.log('获取文章图像信息成功', fileInfo);
       // 3.把查询到的图片做和用户获取头像一样也做特殊处理,就能返回
       ctx.response.set('content-type', fileInfo.mimetype);
       ctx.body = fs.createReadStream(`${PICTURE_PATH}/${filename}`); //拼接上我们对应图片的路径
