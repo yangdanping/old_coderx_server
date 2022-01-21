@@ -1,4 +1,5 @@
 const errorTypes = require('../constants/error-types');
+const Result = require('./Result');
 // 只有发生了错误才会来到这,将user.middleware传过来的错误信息(error.message)进一步细化并传给用户
 const errorHandler = (error, ctx) => {
   //由于我在emit时,都把error, ctx这两个发射出去了,所以这里可以拿到
@@ -13,6 +14,10 @@ const errorHandler = (error, ctx) => {
     case errorTypes.USERNAME_EXISTS:
       code = 409; // Conflict(发生冲突)
       msg = errorTypes.USERNAME_EXISTS;
+      break;
+    case errorTypes.NAME_EXISTS:
+      code = 409; // Conflict(发生冲突)
+      msg = errorTypes.NAME_EXISTS;
       break;
     case errorTypes.USER_DOES_NOT_EXISTS:
       code = 400; // Bad Request(参数传错/错误请求)
@@ -37,7 +42,7 @@ const errorHandler = (error, ctx) => {
 
   console.log(`error-handle返回客户端的错误信息---${msg}`); //控制台打印测试
   ctx.status = code;
-  ctx.body = { code, msg }; //返回给客户端具体的错误信息,让用户看到错误信息
+  ctx.body = Result.fail(msg, code); //返回给客户端具体的错误信息,让用户看到错误信息
 };
 
 module.exports = errorHandler;

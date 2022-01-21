@@ -1,7 +1,7 @@
 const Router = require('koa-router');
 const replyRouter = new Router({ prefix: '/reply' });
 const replyController = require('../controller/reply.controller');
-const { verifyAuth, verifyPermission } = require('../middleware/auth.middleware');
+const { verifyAuth } = require('../middleware/auth.middleware');
 
 /* ★<用户对评论的评论回复>的实现---------------------------------- */
 replyRouter.post('/', verifyAuth, replyController.addReply);

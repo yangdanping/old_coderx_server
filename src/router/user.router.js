@@ -3,9 +3,10 @@ const userRouter = new Router({ prefix: '/user' });
 const userController = require('../controller/user.controller');
 const { verifyUserRegister, encryptUserPwd, verifyUserLogin } = require('../middleware/user.middleware');
 const { verifyAuth } = require('../middleware/auth.middleware');
+const Result = require('../app/Result');
 
 /* ★检查授权用户接口------------------------------------------- */
-userRouter.get('/checkAuth', verifyAuth, (ctx) => (ctx.body = { code: '0' }));
+userRouter.get('/checkAuth', verifyAuth, (ctx) => (ctx.body = Result.success()));
 
 /* ★用户注册接口-------------------------------------------
 大致流程:用户发过来账号(姓名/密码) --> 账号密码验证 --> 密码加密 --> 在数据库中存储起来 --> 注册成功  */

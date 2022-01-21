@@ -3,7 +3,7 @@ const articleService = require('../service/article.service.js');
 const userService = require('../service/user.service.js');
 const fileService = require('../service/file.service.js');
 const { PICTURE_PATH } = require('../constants/file-path');
-
+const Result = require('../app/Result');
 class ArticleController {
   async addArticle(ctx, next) {
     // 1.获取用户id(从验证token的结果中拿到)文章数据
@@ -12,26 +12,14 @@ class ArticleController {
     // 2.根据传递过来参数在数据库中插入文章
     const result = await articleService.addArticle(userId, title, content);
     // 3.将插入数据库的结果处理,给用户(前端/客户端)返回真正的数据
-    if (result) {
-      console.log('发布文章成功!');
-      ctx.body = { code: '0', data: result };
-    } else {
-      console.log('发布文章失败!');
-      ctx.body = { code: '1', data: result };
-    }
+    ctx.body = result ? Result.success(result) : Result.fail('发布文章失败!');
   }
   async viewArticle(ctx, next) {
     // 1.获取用户id和点赞的文章id
     const { articleId } = ctx.params;
     // 2.根据传递过来参数在数据库中判断是否有点赞,有则取消点赞,没有则成功点赞
     const result = await articleService.addView(articleId);
-    if (result) {
-      console.log('浏览文章成功!');
-      ctx.body = { code: '0', data: result };
-    } else {
-      console.log('浏览文章失败!');
-      ctx.body = { code: '1', data: result };
-    }
+    ctx.body = result ? Result.success(result) : Result.fail('浏览文章失败!');
   }
   async likeArticle(ctx, next) {
     // 1.获取用户id和点赞的评论id
@@ -43,10 +31,10 @@ class ArticleController {
     const isliked = await userService.haslike(tableName, dataId, userId);
     if (!isliked) {
       const result = await userService.changeLike(tableName, dataId, userId, 1);
-      ctx.body = { code: '0', data: result }; //增加一条点赞记录
+      ctx.body = Result.success(result); //增加一条点赞记录
     } else {
       const result = await userService.changeLike(tableName, dataId, userId);
-      ctx.body = { code: '1', data: result }; //删除一条点赞记录
+      ctx.body = Result.success(result, '1'); //删除一条点赞记录
     }
   }
   async getDetail(ctx, next) {
@@ -56,28 +44,20 @@ class ArticleController {
     // 2.根据传递过来文章id在数据库中查询单个文章
     const result = await articleService.getArticleById(articleId);
     // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
-    if (result) {
-      console.log('查询单个文章成功!');
-      ctx.body = { code: '0', data: result };
-    } else {
-      console.log('发布单个文章失败!');
-      ctx.body = { code: '1', data: result };
-    }
+    ctx.body = result ? Result.success(result) : Result.fail('发布单个文章失败!');
   }
   async getList(ctx, next) {
     // 1.获取文章列表的偏离量和数据长度
-    const { offset, size } = ctx.query;
+    const { offset, limit } = ctx.query;
     // 2.根据传递过来偏离量和数据长度在数据库中查询文章列表
-    const result = await articleService.getArticleList(offset, size);
+    const result = await articleService.getArticleList(offset, limit);
     // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
       result.forEach((article) => (article.content = article.content.replace(new RegExp('<(S*?)[^>]*>.*?|<.*? />|&nbsp; ', 'g'), '')));
       const { total } = await articleService.getTotal();
-      console.log('查询文章列表成功!');
       ctx.body = { code: '0', data: result, total };
     } else {
-      console.log('发布文章列表失败!');
-      ctx.body = { code: '1', data: result };
+      ctx.body = Result.fail('发布单个文章失败!');
     }
   }
   async update(ctx, next) {
@@ -87,13 +67,7 @@ class ArticleController {
     // 2.根据传递过来文章标题和内容,在数据库中做修改
     const result = await articleService.update(title, content, articleId);
     // 3.将修改数据库的结果处理,给用户(前端/客户端)返回真正的数据
-    if (result) {
-      console.log('修改文章成功!');
-      ctx.body = { code: '0', data: result };
-    } else {
-      console.log('修改文章失败!');
-      ctx.body = { code: '1', data: result };
-    }
+    ctx.body = result ? Result.success(result) : Result.fail('修改文章失败!');
   }
   async delete(ctx, next) {
     // 1.删除文章只需获取id
@@ -101,13 +75,7 @@ class ArticleController {
     // 2.根据传递过来文章id直接在数据库删除对应id的文章
     const result = await articleService.delete(articleId);
     // 3.将修改数据库的结果处理,给用户(前端/客户端)返回真正的数据
-    if (result) {
-      console.log('删除文章成功!');
-      ctx.body = { code: '0', data: result };
-    } else {
-      console.log('删除文章失败!');
-      ctx.body = { code: '1', data: result };
-    }
+    ctx.body = result ? Result.success(result) : Result.fail('删除文章失败!');
   }
   async addTag(ctx, next) {
     // 1.获取数据(获取我们之前verifytagExists整合好的tags数组和文章id)

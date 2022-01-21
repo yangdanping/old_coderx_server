@@ -1,29 +1,15 @@
 const tagService = require('../service/tag.service');
-
+const Result = require('../app/Result');
 class TagController {
   async addTag(ctx, next) {
     const { name } = ctx.request.body;
     const result = await tagService.addTag(name);
-    console.log(result);
-    if (result) {
-      console.log(`创建标签成功!`);
-      ctx.body = { code: '0', data: result };
-    } else {
-      console.log(`创建标签失败!`);
-      ctx.body = { code: '1', data: result };
-    }
+    ctx.body = result ? Result.success(result) : Result.fail('创建标签失败!');
   }
   async getList(ctx, next) {
     const { offset, limit } = ctx.query; //暂时先限制展示标签的数量
     const result = await tagService.getTagList(offset, limit);
-    console.log(result);
-    if (result) {
-      console.log(`获取标签列表成功!`);
-      ctx.body = { code: '0', data: result };
-    } else {
-      console.log(`获取标签列表失败!`);
-      ctx.body = { code: '1', data: result };
-    }
+    ctx.body = result ? Result.success(result) : Result.fail('获取标签列表失败!');
   }
 }
 

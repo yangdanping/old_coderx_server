@@ -14,6 +14,9 @@ articleRouter.put('/:articleId/view', articleController.viewArticle);
 /* ★点赞文章接口---------------------------------- */
 articleRouter.post('/:articleId/like', verifyAuth, articleController.likeArticle);
 
+/* ★收藏文章接口---------------------------------- */
+// articleRouter.post('/:articleId/like', verifyAuth, articleController.likeArticle);
+
 /* ★获取文章接口---------------------------------- */
 articleRouter.get('/:articleId', articleController.getDetail);
 

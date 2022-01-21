@@ -1,7 +1,7 @@
 const fileService = require('../service/file.service');
 const userService = require('../service/user.service');
 const config = require('../app/config');
-
+const Result = require('../app/Result');
 class FileController {
   async saveAvatarInfo(ctx, next) {
     // 1.获取图像数据,注意@koa/multer库也是把文件放到ctx的request对象中的,所以上传的文件在ctx.file中找到
@@ -16,10 +16,9 @@ class FileController {
       const avatarUrl = `${config.APP_HOST}:${config.APP_PORT}/user/${userId}/avatar`; //注意,把专门获取头像的接口写好
       const savedAvatarUrl = await userService.updateAvatarUrl(avatarUrl, userId);
       console.log(savedAvatarUrl);
-      ctx.body = savedAvatarUrl ? { code: '0', data: result } : { code: '1' };
+      ctx.body = savedAvatarUrl ? Result.success(result) : Result.fail('保存头像地址失败!');
     } else {
-      console.log('上传用户头像失败');
-      ctx.body = { code: '1' };
+      ctx.body = Result.fail('上传用户头像失败!');
     }
   }
   async savePictureInfo(ctx, next) {
@@ -33,10 +32,10 @@ class FileController {
     for (const file of files) {
       const { filename, mimetype, size } = file;
       const result = await fileService.addFile(userId, articleId, filename, mimetype, size);
-      result ? savedPictures.push(result) : null;
+      result ? savedPictures.push(result) : Result.fail('保存图片失败');
     }
     const count = savedPictures.length;
-    ctx.body = count ? { code: '0', data: `上传${count}张图片成功` } : { code: '1' };
+    ctx.body = count ? Result.success(`上传${count}张图片成功`) : Result.fail('上传图片失败');
   }
 }
 

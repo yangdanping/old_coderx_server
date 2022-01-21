@@ -21,10 +21,10 @@ class TagService {
     }
   }
 
-  async getTagList(offset, size) {
+  async getTagList(offset, limit) {
     try {
       const statement = `SELECT * FROM tag LIMIT ?,?;`;
-      const [result] = await connection.execute(statement, [offset, size]);
+      const [result] = await connection.execute(statement, [offset, limit]);
       return result;
     } catch (error) {
       console.log(error);

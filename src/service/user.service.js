@@ -150,7 +150,7 @@ class UserService {
       console.log(error);
     }
   }
-  async getArticleById(userId, offset, size) {
+  async getArticleById(userId, offset, limit) {
     try {
       const statement = `
       SELECT a.id id,a.title title,a.content content,a.create_at createAt
@@ -158,13 +158,13 @@ class UserService {
       WHERE a.user_id = ?
       LIMIT ?,?;
       `;
-      const [result] = await connection.execute(statement, [userId, offset, size]);
+      const [result] = await connection.execute(statement, [userId, offset, limit]);
       return result;
     } catch (error) {
       console.log(error);
     }
   }
-  async getCommentById(userId, offset, size) {
+  async getCommentById(userId, offset, limit) {
     try {
       const statement = `
       SELECT a.id id,a.title title,c.content content,c.create_at createAt
@@ -174,7 +174,7 @@ class UserService {
       WHERE c.user_id = ?
       LIMIT ?,?;
       `;
-      const [result] = await connection.execute(statement, [userId, offset, size]);
+      const [result] = await connection.execute(statement, [userId, offset, limit]);
       return result;
     } catch (error) {
       console.log(error);

@@ -1,6 +1,6 @@
 const replyService = require('../service/reply.service.js');
 const userService = require('../service/user.service.js');
-
+const Result = require('../app/Result');
 class ReplyController {
   async addReply(ctx, next) {
     // 1.获取数据(包括用户id,回复评论的文章id,回复评论的评论id,回复内容content)
@@ -9,13 +9,7 @@ class ReplyController {
     // 2.将获取到的数据插入到数据库中
     const result = await replyService.addReply(userId, articleId, commentId, content);
     // 3.将插入数据库的结果处理,给用户(前端/客户端)返回真正的数据
-    if (result) {
-      console.log('回复评论成功!');
-      ctx.body = { code: '0', data: result };
-    } else {
-      console.log('回复评论失败!');
-      ctx.body = { code: '1', data: result };
-    }
+    ctx.body = result ? Result.success(result) : Result.fail('回复评论失败!');
   }
   async replyToReply(ctx, next) {
     // 1.获取数据(包括用户id,回复评论的文章id,回复评论的评论id,回复内容content)
@@ -25,13 +19,7 @@ class ReplyController {
     // 2.将获取到的数据插入到数据库中
     const result = await replyService.replyToReply(userId, articleId, commentId, replyId, content);
     // 3.将插入数据库的结果处理,给用户(前端/客户端)返回真正的数据
-    if (result) {
-      console.log('回复该回复成功!');
-      ctx.body = { code: '0', data: result };
-    } else {
-      console.log('回复该回复失败!');
-      ctx.body = { code: '1', data: result };
-    }
+    ctx.body = result ? Result.success(result) : Result.fail('回复该回复失败!');
   }
   async likeReply(ctx, next) {
     // 1.获取用户id和点赞的评论id
@@ -43,10 +31,10 @@ class ReplyController {
     const isliked = await userService.haslike(tableName, dataId, userId);
     if (!isliked) {
       const result = await userService.changeLike(tableName, dataId, userId, 1);
-      ctx.body = { code: '0', data: result }; //增加一条点赞记录
+      ctx.body = Result.success(result); //增加一条点赞记录
     } else {
       const result = await userService.changeLike(tableName, dataId, userId);
-      ctx.body = { code: '1', data: result }; //删除一条点赞记录
+      ctx.body = Result.success(result, '1'); //删除一条点赞记录
     }
   }
 }

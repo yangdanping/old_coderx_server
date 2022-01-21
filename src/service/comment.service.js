@@ -32,7 +32,6 @@ class CommentService {
     try {
       const statement = `DELETE FROM comment WHERE id = ?;`;
       const [result] = await connection.execute(statement, [commentId]);
-      console.log(result);
       return result;
     } catch (error) {
       console.log(error);
@@ -64,7 +63,6 @@ class CommentService {
       GROUP BY c.id
       ORDER BY c.create_at DESC;`;
       const [result] = await connection.execute(statement, [articleId]);
-      console.log(result);
       return result;
     } catch (error) {
       console.log(error);
