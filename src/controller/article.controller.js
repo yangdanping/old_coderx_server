@@ -9,17 +9,19 @@ class ArticleController {
     // 1.获取用户id(从验证token的结果中拿到)文章数据
     const userId = ctx.user.id;
     const { title, content } = ctx.request.body;
+    console.log('addArticle!!!!!!!!!!!!');
+    console.log(content);
     // 2.根据传递过来参数在数据库中插入文章
-    const result = await articleService.addArticle(userId, title, content);
+    // const result = await articleService.addArticle(userId, title, content);
     // 3.将插入数据库的结果处理,给用户(前端/客户端)返回真正的数据
-    ctx.body = result ? Result.success(result) : Result.fail('发布文章失败!');
+    // ctx.body = result ? Result.success(result) : Result.fail('发布文章失败!');
   }
   async viewArticle(ctx, next) {
     // 1.获取用户id和点赞的文章id
     const { articleId } = ctx.params;
     // 2.根据传递过来参数在数据库中判断是否有点赞,有则取消点赞,没有则成功点赞
     const result = await articleService.addView(articleId);
-    ctx.body = result ? Result.success(result) : Result.fail('浏览文章失败!');
+    ctx.body = result ? Result.success(result) : Result.fail('增加文章浏览量失败!');
   }
   async likeArticle(ctx, next) {
     // 1.获取用户id和点赞的评论id
@@ -28,12 +30,12 @@ class ArticleController {
     const dataId = ctx.params[urlKey]; //获取到对应id的值
     const tableName = urlKey.replace('Id', ''); //把Id去掉就是表名
     // 2.根据传递过来参数在数据库中判断是否有点赞,有则取消点赞,没有则成功点赞
-    const isliked = await userService.haslike(tableName, dataId, userId);
+    const isliked = await userService.hasLike(tableName, dataId, userId);
     if (!isliked) {
-      const result = await userService.changeLike(tableName, dataId, userId, 1);
+      const result = await userService.changeLike(tableName, dataId, userId, isliked);
       ctx.body = Result.success(result); //增加一条点赞记录
     } else {
-      const result = await userService.changeLike(tableName, dataId, userId);
+      const result = await userService.changeLike(tableName, dataId, userId, isliked);
       ctx.body = Result.success(result, '1'); //删除一条点赞记录
     }
   }
@@ -44,7 +46,7 @@ class ArticleController {
     // 2.根据传递过来文章id在数据库中查询单个文章
     const result = await articleService.getArticleById(articleId);
     // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
-    ctx.body = result ? Result.success(result) : Result.fail('发布单个文章失败!');
+    ctx.body = result ? Result.success(result) : Result.fail('获取该文章数据失败!');
   }
   async getList(ctx, next) {
     // 1.获取文章列表的偏离量和数据长度
@@ -57,7 +59,7 @@ class ArticleController {
       const { total } = await articleService.getTotal();
       ctx.body = { code: '0', data: result, total };
     } else {
-      ctx.body = Result.fail('发布单个文章失败!');
+      ctx.body = Result.fail('获取文章列表失败!');
     }
   }
   async update(ctx, next) {
@@ -88,19 +90,25 @@ class ArticleController {
       const isExist = await articleService.hasTag(articleId, tag.id);
       console.log(`该标签与文章在关系表中${!isExist ? '不存在,可添加' : '存在'}`);
       if (!isExist) {
-        await articleService.addTag(articleId, tag.id);
+        const result = await articleService.addTag(articleId, tag.id);
+        ctx.body = result ? Result.success(result) : Result.fail('添加标签失败!');
       }
     }
     // 3.不需要返回数据其实,总结:多对多的核心是这张关系表
     // ctx.body = '为该文章添加标签成功!';
+  }
+  async updateTag(ctx, next) {
+    // this.addTag(ctx)
+    // console.log(ctx);
   }
   async getFileInfo(ctx, next) {
     // 1.获取数据(一条动态的每张图片来说,是用filename来区分不同的图的,所以路径中要拼接filename,到这里来获取)
     // 注意!要对前端传来的图片的尺寸参数判断,没有则请求的是原图,有则拼接上对应尺寸
     let { filename } = ctx.params; //改成let以便在下面进行type的拼接
     const { type } = ctx.query;
+    // http://localhost:8000/article/images/1645078817803.jpg?type=small
     const fileInfo = await fileService.getFileByFilename(filename);
-    ['large', 'middle', 'small'].some((item) => item === type) ? (filename += '-' + type) : null; //调用数组的some函数,可判断数组中某个东西是等于某个值,返回布尔值
+    ['large', 'middle', 'small'].some((item) => item === type) && (filename += '-' + type); //调用数组的some函数,可判断数组中某个东西是等于某个值,返回布尔值
     // 2.根据获取到的id去数据库直接查询
     if (fileInfo) {
       console.log('获取文章图像信息成功', fileInfo);
@@ -108,8 +116,13 @@ class ArticleController {
       ctx.response.set('content-type', fileInfo.mimetype);
       ctx.body = fs.createReadStream(`${PICTURE_PATH}/${filename}`); //拼接上我们对应图片的路径
     } else {
-      console.log('获取用户头像信息失败');
+      console.log('获取文章图像信息失败');
     }
+  }
+  async search(ctx, next) {
+    const { keywords } = ctx.query; //拿到了关键字'
+    const result = await articleService.getArticlesByKeyWords(keywords);
+    ctx.body = result ? Result.success(result) : Result.fail('查询文章失败!');
   }
 }
 

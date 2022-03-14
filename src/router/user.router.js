@@ -28,6 +28,9 @@ userRouter.get('/:userId/profile', userController.getProfile);
 /* ★获取用户基本信息接口------------------------------------------- */
 userRouter.get('/:userId/profile', userController.getProfile);
 
+/* ★修改用户基本信息接口------------------------------------------- */
+userRouter.put('/profile', verifyAuth, userController.updateProfile);
+
 /* ★获取用户点赞信息接口------------------------------------------- */
 userRouter.get('/:userId/like', userController.getLiked);
 
@@ -39,5 +42,11 @@ userRouter.post('/:userId/follow', verifyAuth, userController.userFollow);
 
 /* ★获取关注信息接口------------------------------------------- */
 userRouter.get('/:userId/follow', userController.getFollow);
+
+/* ★举报用户接口------------------------------------------- */
+userRouter.post('/:userId/report', verifyAuth, userController.userReport);
+
+/* ★用户反馈接口------------------------------------------- */
+userRouter.post('/:userId/feedback', verifyAuth, userController.userFeedback);
 
 module.exports = userRouter;

@@ -15,20 +15,29 @@ class FileService {
     try {
       const statement = `SELECT * FROM avatar WHERE user_id = ?;`;
       const [result] = await connection.execute(statement, [userId]);
-      return result.pop(); //.pop(),渠道的永远是数组中的最后一个,也就是该id用户的上传的最后一个头像
+      return result.pop(); //.pop(),取到的永远是数组中的最后一个,也就是该id用户的上传的最后一个头像
     } catch (error) {
       console.log(error);
     }
   }
-  async addFile(userId, articleId, filename, mimetype, size) {
+  async addFile(userId, filename, mimetype, size) {
     try {
-      const statement = `INSERT INTO file (user_id, article_id, filename, mimetype, size) VALUES (?,?,?,?,?);`;
-      const [result] = await connection.execute(statement, [userId, articleId, filename, mimetype, size]);
+      const statement = `INSERT INTO file (user_id,filename, mimetype, size) VALUES (?,?,?,?);`;
+      const [result] = await connection.execute(statement, [userId, filename, mimetype, size]);
       return result;
     } catch (error) {
       console.log(error);
     }
   }
+  // async addFile(userId, articleId, filename, mimetype, size) {
+  //   try {
+  //     const statement = `INSERT INTO file (user_id, article_id, filename, mimetype, size) VALUES (?,?,?,?,?);`;
+  //     const [result] = await connection.execute(statement, [userId, articleId, filename, mimetype, size]);
+  //     return result;
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
 
   async getFileByFilename(filename) {
     try {

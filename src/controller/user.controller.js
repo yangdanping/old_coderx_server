@@ -25,9 +25,10 @@ class UserContoller {
     // 1.获取用户请求传递的参数
     const user = ctx.request.body; //注意!request是koa自定义的重新封装后的对象
     // 2.根据传递过来参数在数据库中创建用户(要对JSON数据进行解析,要用koa-bodyparser,在app/config.js中注册)
+    console.log('addUser', user);
     const result = await userService.addUser(user);
     // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
-    ctx.body = token ? Result.success(result) : Result.fail('创建用户失败');
+    ctx.body = result ? Result.success(result) : Result.fail('创建用户失败');
   }
   async getProfile(ctx, next) {
     // 1.拿到路径中拼接的用户id
@@ -36,6 +37,15 @@ class UserContoller {
     const userInfo = await userService.getProfileById(userId);
     // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
     ctx.body = userInfo ? Result.success(userInfo) : Result.fail('获取用户信息失败');
+  }
+  async updateProfile(ctx, next) {
+    // 1.拿到验证中间件中获取到的id和前端传来的用户信息
+    const { id } = ctx.user;
+    const profile = ctx.request.body;
+    // 2.根据id将用户表左连接用户信息表查找用户
+    const result = await userService.updateProfileById(id, profile);
+    // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
+    ctx.body = result ? Result.success(result) : Result.fail('修改用户信息失败!');
   }
   async getLiked(ctx, next) {
     // 1.拿到路径中拼接的用户id
@@ -112,6 +122,25 @@ class UserContoller {
     } else {
       ctx.body = Result.fail('获取用户发表过的评论失败');
     }
+  }
+  async userReport(ctx, next) {
+    const { userId } = ctx.params;
+    const { reportOptions, articleId, commentId } = ctx.request.body;
+    if (!commentId) {
+      const result = await userService.userReport(parseInt(userId), reportOptions.join(' '), articleId);
+      ctx.body = result ? Result.success(result) : Result.fail('举报用户失败!');
+      console.log('我举报的是文章', parseInt(userId), articleId, reportOptions);
+    } else {
+      const result = await userService.userReport(parseInt(userId), reportOptions.join(' '), null, commentId);
+      ctx.body = result ? Result.success(result) : Result.fail('举报用户失败!');
+      console.log('我举报的是评论', parseInt(userId), commentId, reportOptions);
+    }
+  }
+  async userFeedback(ctx, next) {
+    const { userId } = ctx.params;
+    const { content } = ctx.request.body;
+    const result = await userService.userFeedback(parseInt(userId), content);
+    ctx.body = result ? Result.success(result) : Result.fail('举报用户失败!');
   }
 }
 

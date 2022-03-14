@@ -1,5 +1,5 @@
 const { connection, config } = require('../app');
-
+const baseURL = `${config.APP_HOST}:${config.APP_PORT}`;
 class ArticleService {
   async addArticle(userId, title, content) {
     try {
@@ -30,9 +30,9 @@ class ArticleService {
       WHERE article.id = a.id) likes,
       (SELECT COUNT(*)+(SELECT COUNT(*) FROM reply r WHERE r.article_id = a.id)
       FROM comment c WHERE c.article_id = a.id) commentCount,
-      IF(COUNT(tag.id),JSON_ARRAYAGG(JSON_OBJECT('id',tag.id,'name',tag.name)),NULL) tags,
-      (SELECT JSON_ARRAYAGG(CONCAT('${config.APP_HOST}:${config.APP_PORT}/article/images/',file.filename)) FROM file WHERE a.id = file.article_id) images,
-      CONCAT('${config.APP_HOST}:${config.APP_PORT}/article/',a.id) articleUrl
+      IF(COUNT(tag.id),JSON_ARRAYAGG(tag.name),NULL) tags,
+      (SELECT JSON_ARRAYAGG(CONCAT('${baseURL}/article/images/',file.filename)) FROM file WHERE a.id = file.article_id) images,
+      CONCAT('${baseURL}/article/',a.id) articleUrl
       FROM article a
       LEFT JOIN user u ON a.user_id = u.id
       LEFT JOIN profile p ON u.id = p.user_id
@@ -57,8 +57,8 @@ class ArticleService {
       (SELECT COUNT(*)+(SELECT COUNT(*) FROM reply r WHERE r.article_id = a.id)
       FROM comment c WHERE c.article_id = a.id) commentCount,
       IF(COUNT(tag.id),JSON_ARRAYAGG(JSON_OBJECT('id',tag.id,'name',tag.name)),NULL) tags,
-      (SELECT JSON_ARRAYAGG(CONCAT('${config.APP_HOST}:${config.APP_PORT}/article/images/',file.filename)) FROM file WHERE a.id = file.article_id) images,
-      CONCAT('${config.APP_HOST}:${config.APP_PORT}/article/',a.id) articleUrl
+      (SELECT JSON_ARRAYAGG(CONCAT('${baseURL}/article/images/',file.filename)) FROM file WHERE a.id = file.article_id) images,
+      CONCAT('${baseURL}/article/',a.id) articleUrl
       FROM article a
       LEFT JOIN user u ON a.user_id = u.id
       LEFT JOIN profile p ON u.id = p.user_id
@@ -112,6 +112,15 @@ class ArticleService {
     try {
       const statement = `INSERT INTO article_tag (article_id,tag_id) VALUES (?,?);`;
       const [result] = await connection.execute(statement, [articleId, tagId]);
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async getArticlesByKeyWords(keywords) {
+    try {
+      const statement = `SELECT a.id id,a.title title FROM article a where title LIKE '%${keywords}%' LIMIT 0,10`;
+      const [result] = await connection.execute(statement);
       return result;
     } catch (error) {
       console.log(error);

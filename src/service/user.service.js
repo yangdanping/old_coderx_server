@@ -41,7 +41,7 @@ class UserService {
     try {
       const statement = `
       SELECT u.id id,u.name name,p.avatar_url avatarUrl,p.age age,p.sex sex,p.email email,
-      p.career career,p.province province,p.city city,p.sign sign,
+      p.career career,p.address address,
       (SELECT COUNT(*)
       FROM article a
       WHERE a.user_id = u.id) articleCount,
@@ -58,7 +58,21 @@ class UserService {
       console.log(error);
     }
   }
-  async haslike(tableName, dataId, userId) {
+  async updateProfileById(userId, profile) {
+    try {
+      let updateValue = [];
+      Object.keys(profile).forEach((key) => updateValue.push(profile[key]));
+      const updateItem = Object.keys(profile).join(' = ?,').concat(' = ?');
+      const statement = `UPDATE profile SET ${updateItem} WHERE user_id = ?;`;
+      console.log(statement);
+      console.log([...updateValue, userId]);
+      const [result] = await connection.execute(statement, [...updateValue, userId]);
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async hasLike(tableName, dataId, userId) {
     try {
       const statement = `SELECT * FROM ${tableName}_like WHERE ${tableName}_id = ? AND user_id = ?;`;
       const [result] = await connection.execute(statement, [dataId, userId]);
@@ -69,7 +83,7 @@ class UserService {
   }
   async changeLike(tableName, dataId, userId, isLike) {
     try {
-      const statement = isLike
+      const statement = !isLike
         ? `INSERT INTO ${tableName}_like (${tableName}_id,user_id) VALUES (?,?);`
         : `DELETE FROM ${tableName}_like WHERE ${tableName}_id = ? AND user_id = ?;`;
       const [result] = await connection.execute(statement, [dataId, userId]);
@@ -175,6 +189,27 @@ class UserService {
       LIMIT ?,?;
       `;
       const [result] = await connection.execute(statement, [userId, offset, limit]);
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async userReport(userId, reportOptions, articleId, commentId) {
+    try {
+      const statement = `INSERT INTO report (user_id,content,${articleId ? 'article_id' : 'comment_id'}) VALUES (?,?,?);`;
+      console.log(statement);
+      let arr = [userId, reportOptions];
+      articleId ? arr.push(articleId) : arr.push(commentId);
+      const [result] = await connection.execute(statement, arr);
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async userFeedback(userId, content) {
+    try {
+      const statement = `INSERT INTO feedback (user_id,content) VALUES (?,?);`;
+      const [result] = await connection.execute(statement, [userId, content]);
       return result;
     } catch (error) {
       console.log(error);

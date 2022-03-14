@@ -28,12 +28,12 @@ class ReplyController {
     const dataId = ctx.params[urlKey]; //获取到对应id的值
     const tableName = urlKey.replace('Id', ''); //把Id去掉就是表名
     // 2.根据传递过来参数在数据库中判断是否有点赞,有则取消点赞,没有则成功点赞
-    const isliked = await userService.haslike(tableName, dataId, userId);
+    const isliked = await userService.hasLike(tableName, dataId, userId);
     if (!isliked) {
-      const result = await userService.changeLike(tableName, dataId, userId, 1);
+      const result = await userService.changeLike(tableName, dataId, userId, isliked);
       ctx.body = Result.success(result); //增加一条点赞记录
     } else {
-      const result = await userService.changeLike(tableName, dataId, userId);
+      const result = await userService.changeLike(tableName, dataId, userId, isliked);
       ctx.body = Result.success(result, '1'); //删除一条点赞记录
     }
   }

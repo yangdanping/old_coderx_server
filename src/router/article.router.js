@@ -4,18 +4,8 @@ const articleController = require('../controller/article.controller');
 const { verifyAuth, verifyPermission } = require('../middleware/auth.middleware');
 const { verifytagExists } = require('../middleware/tag.middleware.js');
 
-/* ★发布文章接口----------------------------------------------
-用户发布文章必须先验证其是否登陆(授权) */
-articleRouter.post('/', verifyAuth, articleController.addArticle);
-
-/* ★浏览文章接口---------------------------------- */
-articleRouter.put('/:articleId/view', articleController.viewArticle);
-
-/* ★点赞文章接口---------------------------------- */
-articleRouter.post('/:articleId/like', verifyAuth, articleController.likeArticle);
-
-/* ★收藏文章接口---------------------------------- */
-// articleRouter.post('/:articleId/like', verifyAuth, articleController.likeArticle);
+/* ★模糊查询接口---------------------------------- */
+articleRouter.get('/search', articleController.search);
 
 /* ★获取文章接口---------------------------------- */
 articleRouter.get('/:articleId', articleController.getDetail);
@@ -23,14 +13,27 @@ articleRouter.get('/:articleId', articleController.getDetail);
 /* ★获取文章列表接口---------------------------------- */
 articleRouter.get('/', articleController.getList);
 
-/* ★修改文章接口---------------------------------- */
-articleRouter.put('/:articleId', verifyAuth, verifyPermission, articleController.update);
+/* ★发布文章接口----------------------------------------------
+用户发布文章必须先验证其是否登陆(授权) */
+articleRouter.post('/', verifyAuth, articleController.addArticle);
 
-/* ★删除文章接口---------------------------------- */
-articleRouter.delete('/:articleId', verifyAuth, verifyPermission, articleController.delete);
+/* ★点赞文章接口---------------------------------- */
+articleRouter.post('/:articleId/like', verifyAuth, articleController.likeArticle);
 
 /* ★添加标签接口---------------------------------- */
 articleRouter.post('/:articleId/tag', verifyAuth, verifyPermission, verifytagExists, articleController.addTag);
+
+/* ★浏览文章接口---------------------------------- */
+articleRouter.put('/:articleId/view', articleController.viewArticle);
+
+/* ★修改文章接口---------------------------------- */
+articleRouter.put('/:articleId', verifyAuth, verifyPermission, articleController.update);
+
+/* ★修改标签接口---------------------------------- */
+articleRouter.put('/:articleId/tag', verifyAuth, verifyPermission, verifytagExists, articleController.updateTag);
+
+/* ★删除文章接口---------------------------------- */
+articleRouter.delete('/:articleId', verifyAuth, verifyPermission, articleController.delete);
 
 /* ★<获取动态图片>的实现
 到时前端是通过返回的数据进行对该接口的请求,<img :src="momentInfo.images">
