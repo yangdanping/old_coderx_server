@@ -35,7 +35,7 @@ articleRouter.put('/:articleId/tag', verifyAuth, verifyPermission, verifytagExis
 /* ★删除文章接口---------------------------------- */
 articleRouter.delete('/:articleId', verifyAuth, verifyPermission, articleController.delete);
 
-/* ★<获取动态图片>的实现
+/* ★<获取文字图片>的实现
 到时前端是通过返回的数据进行对该接口的请求,<img :src="momentInfo.images">
 注意,上传图像那边的接口增加中间件,增加不同尺寸的图片
 到时起前端通过拼接上query参数来这里获取对应对应尺寸的图片*/

@@ -60,6 +60,13 @@ class FileController {
   //   const count = savedPictures.length;
   //   ctx.body = count ? Result.success(`上传${count}张图片成功`) : Result.fail('上传图片失败');
   // }
+
+  async updateFile(ctx, next) {
+    const { articleId } = ctx.params;
+    const { uploaded } = ctx.request.body;
+    const result = await fileService.updateFile(articleId, uploaded);
+    ctx.body = result ? Result.success(result) : Result.fail('上传文章配图失败!');
+  }
 }
 
 module.exports = new FileController();

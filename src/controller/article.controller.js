@@ -9,12 +9,10 @@ class ArticleController {
     // 1.获取用户id(从验证token的结果中拿到)文章数据
     const userId = ctx.user.id;
     const { title, content } = ctx.request.body;
-    console.log('addArticle!!!!!!!!!!!!');
-    console.log(content);
     // 2.根据传递过来参数在数据库中插入文章
-    // const result = await articleService.addArticle(userId, title, content);
+    const result = await articleService.addArticle(userId, title, content);
     // 3.将插入数据库的结果处理,给用户(前端/客户端)返回真正的数据
-    // ctx.body = result ? Result.success(result) : Result.fail('发布文章失败!');
+    ctx.body = result ? Result.success(result) : Result.fail('发布文章失败!');
   }
   async viewArticle(ctx, next) {
     // 1.获取用户id和点赞的文章id
@@ -50,13 +48,13 @@ class ArticleController {
   }
   async getList(ctx, next) {
     // 1.获取文章列表的偏离量和数据长度
-    const { offset, limit } = ctx.query;
+    const { offset, limit, tagId } = ctx.query;
     // 2.根据传递过来偏离量和数据长度在数据库中查询文章列表
-    const result = await articleService.getArticleList(offset, limit);
+    const result = await articleService.getArticleList(offset, limit, tagId);
     // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
       result.forEach((article) => (article.content = article.content.replace(new RegExp('<(S*?)[^>]*>.*?|<.*? />|&nbsp; ', 'g'), '')));
-      const { total } = await articleService.getTotal();
+      const total = tagId ? result.length : await articleService.getTotal();
       ctx.body = { code: '0', data: result, total };
     } else {
       ctx.body = Result.fail('获取文章列表失败!');

@@ -12,4 +12,6 @@ fileRouter.post('/avatar', verifyAuth, avatarHandler, fileController.saveAvatarI
 若上传9张图片,则也得把这9张图片的信息保存起来*/
 fileRouter.post('/picture', verifyAuth, pictureHandler, pictureResize, fileController.savePictureInfo);
 
+fileRouter.post('/picture/:articleId', verifyAuth, fileController.updateFile);
+
 module.exports = fileRouter;

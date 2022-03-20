@@ -48,6 +48,16 @@ class FileService {
       console.log(error);
     }
   }
+  async updateFile(articleId, uploaded) {
+    try {
+      const statement = `UPDATE file SET article_id = ? WHERE id IN (${uploaded.join(',')})`;
+      console.log(statement);
+      const [result] = await connection.execute(statement, [articleId]);
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 module.exports = new FileService();
