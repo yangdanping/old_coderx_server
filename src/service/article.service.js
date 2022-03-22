@@ -129,10 +129,28 @@ class ArticleService {
       console.log(error);
     }
   }
+  async clearTag(articleId) {
+    try {
+      const statement = `DELETE FROM article_tag WHERE article_id = ?;`;
+      const [result] = await connection.execute(statement, [articleId]);
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
   async getArticlesByKeyWords(keywords) {
     try {
       const statement = `SELECT a.id id,a.title title FROM article a where title LIKE '%${keywords}%' LIMIT 0,10`;
       const [result] = await connection.execute(statement);
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async findFileById(articleId) {
+    try {
+      const statement = `SELECT f.filename FROM file f WHERE f.article_id = ?;`;
+      const [result] = await connection.execute(statement, [articleId]);
       return result;
     } catch (error) {
       console.log(error);

@@ -19,11 +19,11 @@ userRouter.post('/login', verifyUserLogin, userController.userLogin);
 /* ★获取用户文章接口------------------------------------------- */
 userRouter.get('/:userId/article', userController.getArticle);
 
+/* ★获取用户收藏夹文章接口------------------------------------------- */
+userRouter.get('/:userId/collect', userController.getArticleByCollectId);
+
 /* ★获取用户评论接口------------------------------------------- */
 userRouter.get('/:userId/comment', userController.getComment);
-
-/* ★获取用户文章接口------------------------------------------- */
-userRouter.get('/:userId/profile', userController.getProfile);
 
 /* ★获取用户基本信息接口------------------------------------------- */
 userRouter.get('/:userId/profile', userController.getProfile);

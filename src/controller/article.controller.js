@@ -4,6 +4,7 @@ const userService = require('../service/user.service.js');
 const fileService = require('../service/file.service.js');
 const { PICTURE_PATH } = require('../constants/file-path');
 const Result = require('../app/Result');
+const deleteFile = require('../utils/deleteFile');
 class ArticleController {
   async addArticle(ctx, next) {
     // 1.获取用户id(从验证token的结果中拿到)文章数据
@@ -73,31 +74,39 @@ class ArticleController {
     // 1.删除文章只需获取id
     const { articleId } = ctx.params;
     // 2.根据传递过来文章id直接在数据库删除对应id的文章
+    // 删除文章的同时,把该文章的文件也删除掉
+    const files = await articleService.findFileById(articleId);
+    files.forEach((file) => deleteFile(file.filename));
     const result = await articleService.delete(articleId);
-    // 3.将修改数据库的结果处理,给用户(前端/客户端)返回真正的数据
+    // // 3.将修改数据库的结果处理,给用户(前端/客户端)返回真正的数据
     ctx.body = result ? Result.success(result) : Result.fail('删除文章失败!');
   }
-  async addTag(ctx, next) {
+  async changeTag(ctx, next) {
     // 1.获取数据(获取我们之前verifytagExists整合好的tags数组和文章id)
-    // const { tags } = ctx.request.body;
     const { tags } = ctx; //拿到了用户所选择的标签
     const { articleId } = ctx.params; //拿到了被添加标签的文章
-    // 2.添加所有的标签(害得做判断,若该文章已经有个标签叫JS了,则不需要再添加了)
-    for (const tag of tags) {
-      // 2.1判断标签是否已和文章有过关系了(若关系表中不存在,则添加关系)
-      const isExist = await articleService.hasTag(articleId, tag.id);
-      console.log(`该标签与文章在关系表中${!isExist ? '不存在,可添加' : '存在'}`);
-      if (!isExist) {
-        const result = await articleService.addTag(articleId, tag.id);
-        ctx.body = result ? Result.success(result) : Result.fail('添加标签失败!');
-      }
+    const { hasOldTags } = ctx.query;
+    if (hasOldTags) {
+      console.log(hasOldTags, tags, '这是修改!!,清空掉所有tags后添加');
+      await articleService.clearTag(articleId);
     }
-    // 3.不需要返回数据其实,总结:多对多的核心是这张关系表
-    // ctx.body = '为该文章添加标签成功!';
-  }
-  async updateTag(ctx, next) {
-    // this.addTag(ctx)
-    // console.log(ctx);
+    if (!tags.length && hasOldTags) {
+      console.log('新数组啥也没有,则清空后直接返回成功!!!,不再添加');
+      ctx.body = Result.success('清空标签成功'); // 若新数组啥也没有,则清空后直接返回成功
+    } else {
+      // 2.添加所有的标签(害得做判断,若该文章已经有个标签叫JS了,则不需要再添加了)
+      for (const tag of tags) {
+        // 2.1判断标签是否已和文章有过关系了(若关系表中不存在,则添加关系)
+        const isExist = await articleService.hasTag(articleId, tag.id);
+        console.log(tag, `该标签与文章在关系表中${!isExist ? '不存在,可添加' : '存在'}`);
+        if (!isExist) {
+          const result = await articleService.addTag(articleId, tag.id);
+          ctx.body = result ? Result.success(result) : Result.fail('添加标签失败!');
+        }
+      }
+      // 3.不需要返回数据其实,总结:多对多的核心是这张关系表
+      // ctx.body = '为该文章添加标签成功!';
+    }
   }
   async getFileInfo(ctx, next) {
     // 1.获取数据(一条动态的每张图片来说,是用filename来区分不同的图的,所以路径中要拼接filename,到这里来获取)

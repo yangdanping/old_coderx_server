@@ -178,6 +178,22 @@ class UserService {
       console.log(error);
     }
   }
+  async getArticleByCollectId(userId, collectId, offset, limit) {
+    try {
+      const statement = `
+      SELECT a.id id,a.title title,a.content content,a.create_at createAt
+      FROM article_collect ac
+      LEFT JOIN collect c ON ac.collect_id = c.id
+      LEFT JOIN article a ON ac.article_id = a.id
+      WHERE c.user_id = ? AND c.id = ?
+      LIMIT ?,?;
+      `;
+      const [result] = await connection.execute(statement, [userId, collectId, offset, limit]);
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
   async getCommentById(userId, offset, limit) {
     try {
       const statement = `

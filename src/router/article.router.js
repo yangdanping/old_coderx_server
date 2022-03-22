@@ -20,17 +20,14 @@ articleRouter.post('/', verifyAuth, articleController.addArticle);
 /* ★点赞文章接口---------------------------------- */
 articleRouter.post('/:articleId/like', verifyAuth, articleController.likeArticle);
 
-/* ★添加标签接口---------------------------------- */
-articleRouter.post('/:articleId/tag', verifyAuth, verifyPermission, verifytagExists, articleController.addTag);
+/* ★改变标签接口---------------------------------- */
+articleRouter.post('/:articleId/tag', verifyAuth, verifyPermission, verifytagExists, articleController.changeTag);
 
 /* ★浏览文章接口---------------------------------- */
 articleRouter.put('/:articleId/view', articleController.viewArticle);
 
 /* ★修改文章接口---------------------------------- */
 articleRouter.put('/:articleId', verifyAuth, verifyPermission, articleController.update);
-
-/* ★修改标签接口---------------------------------- */
-articleRouter.put('/:articleId/tag', verifyAuth, verifyPermission, verifytagExists, articleController.updateTag);
 
 /* ★删除文章接口---------------------------------- */
 articleRouter.delete('/:articleId', verifyAuth, verifyPermission, articleController.delete);

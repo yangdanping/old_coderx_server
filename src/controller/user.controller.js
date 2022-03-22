@@ -123,6 +123,19 @@ class UserContoller {
       ctx.body = Result.fail('获取用户发表过的评论失败');
     }
   }
+  async getArticleByCollectId(ctx, next) {
+    const { userId } = ctx.params;
+    const { collectId, offset, limit } = ctx.query;
+    console.log(userId, collectId, offset, limit);
+    const collectArticle = await userService.getArticleByCollectId(userId, collectId, offset, limit);
+    if (collectArticle) {
+      collectArticle.forEach((article) => (article.content = removeHTMLTag(article.content)));
+      console.log('获取该收藏夹下的文章成功');
+      ctx.body = Result.success(collectArticle);
+    } else {
+      ctx.body = Result.fail('获取用户发表过的文章失败');
+    }
+  }
   async userReport(ctx, next) {
     const { userId } = ctx.params;
     const { reportOptions, articleId, commentId } = ctx.request.body;
