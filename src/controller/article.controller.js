@@ -56,7 +56,8 @@ class ArticleController {
     if (result) {
       result.forEach((article) => (article.content = article.content.replace(new RegExp('<(S*?)[^>]*>.*?|<.*? />|&nbsp; ', 'g'), '')));
       const total = tagId ? result.length : await articleService.getTotal();
-      ctx.body = { code: '0', data: result, total };
+      ctx.body = result ? Result.success({ result, total }) : Result.fail('获取该文章数据失败!');
+      // ctx.body = { code: 0, data: result, total };
     } else {
       ctx.body = Result.fail('获取文章列表失败!');
     }

@@ -11,6 +11,8 @@ class TagController {
     const result = await tagService.getTagList(offset, limit);
     ctx.body = result ? Result.success(result) : Result.fail('获取标签列表失败!');
   }
+
 }
+
 
 module.exports = new TagController();

@@ -16,6 +16,9 @@ userRouter.post('/register', verifyUserRegister, encryptUserPwd, userController.
 大致流程:用户发过来账号(姓名/密码) --> 账号密码验证 --> 进行用户授权 */
 userRouter.post('/login', verifyUserLogin, userController.userLogin);
 
+// 根据用户id查看回复反馈
+userRouter.get('/feedback/:userId', verifyAuth, userController.getReplyByUserId);
+
 /* ★获取用户文章接口------------------------------------------- */
 userRouter.get('/:userId/article', userController.getArticle);
 

@@ -1,5 +1,5 @@
 class Result {
-  static success(data, code = '0', token = null) {
+  static success(data, code = 0, token = null) {
     if (!token) {
       return { code, data };
     } else {

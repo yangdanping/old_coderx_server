@@ -144,18 +144,14 @@ class UserService {
       const statement = `
       SELECT u.id id,u.name name,
       IF(COUNT(uf.follower_id),JSON_ARRAYAGG(JSON_OBJECT('id',uf.user_id,'name',
-      (SELECT user.name from user WHERE user.id = uf.user_id),'avatarUrl',p.avatar_url)),NULL) following,
-      (SELECT JSON_ARRAYAGG(JSON_OBJECT('id',ufo.follower_id,'name',us.name,'avatarUrl',pf.avatar_url)) FROM user us
-      LEFT JOIN user_follow ufo
-      ON us.id = ufo.follower_id
-      LEFT JOIN profile pf
-      ON us.id = pf.user_id
-      WHERE ufo.user_id = u.id
-      GROUP BY ufo.user_id) follower FROM user u
-      LEFT JOIN user_follow uf
-      ON u.id = uf.follower_id
-      LEFT JOIN profile p
-      ON uf.user_id = p.user_id
+      (SELECT user.name from user WHERE user.id = uf.user_id),
+      'avatarUrl',p.avatar_url,'sex',p.sex,'career',p.career
+      )),NULL) following,
+      (SELECT JSON_ARRAYAGG(JSON_OBJECT('id',ufo.follower_id,
+      'name',us.name,'avatarUrl',pf.avatar_url,'sex',pf.sex,'career',pf.career)) FROM user us
+      LEFT JOIN user_follow ufo ON us.id = ufo.follower_id LEFT JOIN profile pf ON us.id = pf.user_id
+      WHERE ufo.user_id = u.id GROUP BY ufo.user_id) follower
+      FROM user u LEFT JOIN user_follow uf ON u.id = uf.follower_id LEFT JOIN profile p ON uf.user_id = p.user_id
       WHERE u.id = ?
       GROUP BY u.id;`;
       const [result] = await connection.execute(statement, [userId]);
@@ -226,6 +222,21 @@ class UserService {
     try {
       const statement = `INSERT INTO feedback (user_id,content) VALUES (?,?);`;
       const [result] = await connection.execute(statement, [userId, content]);
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async getReplyByUserId(userId) {
+    try {
+      const statement = `
+      SELECT f.id id,u.name name,f.content content,a.name admin,f.reply reply,f.create_at createAt
+      FROM feedback f
+      LEFT JOIN user u ON u.id = f.user_id
+      LEFT JOIN admin a ON a.id = f.admin_id
+      WHERE f.user_id = ? AND f.reply IS NOT NULL
+      ORDER BY f.create_at;`;
+      const [result] = await connection.execute(statement, [userId]);
       return result;
     } catch (error) {
       console.log(error);

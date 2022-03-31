@@ -19,7 +19,7 @@ class UserContoller {
       algorithm: 'RS256' //设置RS256加密算法
     });
     // 3.向客户端返回id,name,token
-    ctx.body = token ? Result.success({ id, name }, '0', token) : Result.fail('生成token失败');
+    ctx.body = token ? Result.success({ id, name }, 0, token) : Result.fail('生成token失败');
   }
   async addUser(ctx, next) {
     // 1.获取用户请求传递的参数
@@ -154,6 +154,13 @@ class UserContoller {
     const { content } = ctx.request.body;
     const result = await userService.userFeedback(parseInt(userId), content);
     ctx.body = result ? Result.success(result) : Result.fail('举报用户失败!');
+  }
+  async getReplyByUserId(ctx, next) {
+    const { userId } = ctx.params;
+    console.log('getReplyByUserId!!!!', userId);
+    // 2.根据传递过来偏离量和数据长度在数据库中查询文章列表
+    const result = await userService.getReplyByUserId(userId);
+    ctx.body = result ? Result.success(result) : Result.fail('获取反馈回复失败!');
   }
 }
 
