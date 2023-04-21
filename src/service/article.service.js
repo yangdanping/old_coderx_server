@@ -23,7 +23,7 @@ class ArticleService {
     try {
       // const statement = 'SELECT * FROM article WHERE id = ?;';
       const statement = `
-      SELECT a.id id,a.title title,a.content content,a.views views,a.create_at createAt,a.update_at updateAt,
+      SELECT a.id id,a.title title,a.content content,a.views views,a.status status,a.create_at createAt,a.update_at updateAt,
       JSON_OBJECT('id',u.id,'name',u.name,'avatarUrl',p.avatar_url) author,
       (SELECT COUNT(al.user_id) FROM article
       LEFT JOIN article_like al ON article.id = al.article_id
@@ -54,7 +54,7 @@ class ArticleService {
   async getArticleList(offset, limit, tagId) {
     try {
       const statement = `
-      SELECT a.id id,a.title title,a.content content,a.views views,a.create_at createAt,a.update_at updateAt,
+      SELECT a.id id,a.title title,a.content content,a.views views,a.status status,a.create_at createAt,a.update_at updateAt,
       JSON_OBJECT('id',u.id,'name',u.name,'avatarUrl',p.avatar_url,'sex',p.sex,'career',p.career) author,
       (SELECT COUNT(al.user_id) FROM article
       LEFT JOIN article_like al ON article.id = al.article_id

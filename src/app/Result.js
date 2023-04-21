@@ -6,7 +6,7 @@ class Result {
       return { code, data, token };
     }
   }
-  static fail(msg, code = '1') {
+  static fail(msg, code = -1) {
     console.log(msg);
     return { code, msg };
   }

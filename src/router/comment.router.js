@@ -1,10 +1,10 @@
 const Router = require('koa-router');
 const commentRouter = new Router({ prefix: '/comment' });
 const commentController = require('../controller/comment.controller');
-const { verifyAuth, verifyPermission } = require('../middleware/auth.middleware');
+const { verifyAuth, verifyStatus, verifyPermission } = require('../middleware/auth.middleware');
 
 /* ★<用户对文章评论>的实现---------------------------------- */
-commentRouter.post('/', verifyAuth, commentController.addComment);
+commentRouter.post('/', verifyAuth, verifyStatus, commentController.addComment);
 
 /* ★<获取评论列表>的实现----------------------------------
 设置为不登录的用户也能看评论列表 */
@@ -18,7 +18,7 @@ commentRouter.post('/:commentId/like', verifyAuth, commentController.likeComment
 由于是对某一条评论的回复,所以当我对某条具体评论做操作时,最好也把commentId放上去,
 相当于回复id为1的评论对应的url --> {{baseUrl}}comment/1/reply,到时前端也要这样拼接id
 在Controller里就在body.params中取这个commentId,这样更加符合Restful风格*/
-commentRouter.post('/:commentId/reply', verifyAuth, commentController.reply);
+commentRouter.post('/:commentId/reply', verifyAuth, verifyStatus, commentController.reply);
 
 /* ★<用户修改评论>的实现----------------------------------
 除了要验证授权,你只能修改你之前发表的评论,所以得加一个验证权限中间件(先把update逻辑走通再加)

@@ -3,6 +3,7 @@ const authService = require('../service/auth.service');
 const errorTypes = require('../constants/error-types');
 const { emitErrMsg } = require('../utils');
 const { PUBLIC_KEY } = require('../app/config');
+const Result = require('../app/Result');
 
 /* ★1.验证授权中间件------------------------------------------
 很重要!很常用!加了该中间件的接口每次请求都会验证是否有token/token是否过期 */
@@ -10,13 +11,12 @@ const verifyAuth = async (ctx, next) => {
   const authorization = ctx.headers.authorization;
   if (!authorization) return emitErrMsg(ctx, errorTypes.UNAUTH); //若header中没有携带token信息,则报错无效的token
   const token = authorization.replace('Bearer ', '');
-  console.log(token);
+  console.log('拿到了token', token);
   // 2.验证token(记得导入之前设置好的公钥,拿到的结果是之前颁发token时携带的数据(id/name/颁发时间/过期时间))
   // jwt验证失败后会直接抛出异常,所以要try/catch捕获该异常,否则就会直接报错
   try {
     const verifyResult = jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'] });
     ctx.user = verifyResult; //记得把拿到的结果(id/name/.../颁发时间/过期时间)保存到user,到时用户发布动态等要用到
-    console.log('已授权', ctx.user);
     await next(); //验证成功,则直接调用next
   } catch (error) {
     return emitErrMsg(ctx, errorTypes.UNAUTH);
@@ -50,7 +50,15 @@ const verifyPermission = async (ctx, next) => {
   await next(); //验证成功,则直接调用next
 };
 
+// ★3.验证状态中间件------------------------------------------
+const verifyStatus = async (ctx, next) => {
+  const { id } = ctx.user;
+  const result = await authService.checkStatus(id);
+  console.log('verifyStatus!!!!!', result);
+  result === '0' ? await next() : (ctx.body = Result.fail('您已被封禁'));
+};
 module.exports = {
   verifyAuth,
+  verifyStatus,
   verifyPermission
 };

@@ -59,6 +59,12 @@ class CommentController {
     const { articleId } = ctx.query;
     // 2.根据获取到的数据去查询出列表
     const result = await commentService.getCommentList(articleId);
+    console.log(result);
+    result.forEach((comment) => {
+      if (comment.status === '1') {
+        comment.content = '该评论已被封禁';
+      }
+    });
     ctx.body = result ? Result.success(result) : Result.fail('获取评论列表失败!');
   }
 }

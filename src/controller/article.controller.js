@@ -44,6 +44,9 @@ class ArticleController {
     console.log(articleId);
     // 2.根据传递过来文章id在数据库中查询单个文章
     const result = await articleService.getArticleById(articleId);
+    if (result.status === '1') {
+      result.title = result.content = '文章已被封禁';
+    }
     // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
     ctx.body = result ? Result.success(result) : Result.fail('获取该文章数据失败!');
   }
@@ -54,7 +57,13 @@ class ArticleController {
     const result = await articleService.getArticleList(offset, limit, tagId);
     // 3.将查询数据库的结果处理,给用户(前端/客户端)返回真正的数据
     if (result) {
-      result.forEach((article) => (article.content = article.content.replace(new RegExp('<(S*?)[^>]*>.*?|<.*? />|&nbsp; ', 'g'), '')));
+      result.forEach((article) => {
+        if (article.status === '0') {
+          article.content = article.content.replace(new RegExp('<(S*?)[^>]*>.*?|<.*? />|&nbsp; ', 'g'), '');
+        } else {
+          article.title = article.content = '文章已被封禁';
+        }
+      });
       const total = tagId ? result.length : await articleService.getTotal();
       ctx.body = result ? Result.success({ result, total }) : Result.fail('获取该文章数据失败!');
       // ctx.body = { code: 0, data: result, total };

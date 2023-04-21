@@ -12,6 +12,17 @@ class AuthService {
       console.log(error);
     }
   }
+
+  async checkStatus(userId) {
+    try {
+      const statement = `SELECT status FROM user WHERE id = ?;`;
+      const [result] = await connection.execute(statement, [userId]);
+      const { status } = result[0];
+      return status;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 module.exports = new AuthService();

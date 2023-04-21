@@ -1,7 +1,7 @@
 const Router = require('koa-router');
 const articleRouter = new Router({ prefix: '/article' });
 const articleController = require('../controller/article.controller');
-const { verifyAuth, verifyPermission } = require('../middleware/auth.middleware');
+const { verifyAuth, verifyStatus, verifyPermission } = require('../middleware/auth.middleware');
 const { verifytagExists } = require('../middleware/tag.middleware.js');
 
 /* ★模糊查询接口---------------------------------- */
@@ -15,10 +15,10 @@ articleRouter.get('/', articleController.getList);
 
 /* ★发布文章接口----------------------------------------------
 用户发布文章必须先验证其是否登陆(授权) */
-articleRouter.post('/', verifyAuth, articleController.addArticle);
+articleRouter.post('/', verifyAuth, verifyStatus, articleController.addArticle);
 
 /* ★点赞文章接口---------------------------------- */
-articleRouter.post('/:articleId/like', verifyAuth, articleController.likeArticle);
+articleRouter.post('/:articleId/like', verifyAuth, verifyStatus, articleController.likeArticle);
 
 /* ★改变标签接口---------------------------------- */
 articleRouter.post('/:articleId/tag', verifyAuth, verifyPermission, verifytagExists, articleController.changeTag);
